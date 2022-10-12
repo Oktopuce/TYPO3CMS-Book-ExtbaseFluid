@@ -13,20 +13,6 @@ create a JSON based output for the ``list`` action in the
 ``post`` controller of the BlogExample. To be able to do so we need
 a PHP based view.
 
-When no Fluid template is found for a controller/action/format
-combination, a PHP based view will be used. This PHP class is resolved
-against a naming convention which is defined in the
-``ActionController`` in the class variable
-``$viewObjectNamePattern``. The default naming convention is
-following::
-
-   \MyVendor\@extension\View\@controller\@action@format
-
-All parts beginning with ``@`` will be replaced accordingly.
-When no class with this name can be found, the ``@format`` will be
-removed from the naming convention and a matching class again searched
-for.
-
 Our PHP based view for the list view of the post controller should
 have the class name ``\MyVendor\BlogExample\View\Post\ListJSON``, because
 it applies only for the format JSON. So that the class according to the
@@ -34,7 +20,7 @@ naming convention must be implemented in the file
 *EXT:blog_example/Classes/View/Post/ListJSON.php*.
 
 Each view must implement the interface
-``\TYPO3\CMS\Extbase\Mvc\ViewViewInterface``. This consists off some
+``\TYPO3\CMS\Extbase\Mvc\ViewInterface``. This consists off some
 initializing methods and the ``render()`` method, which is called
 by the controller for displaying the view.
 
@@ -54,6 +40,9 @@ initializing methods and you only have to implement the
       }
    }
 
+..  warning::
+    The ``TYPO3\CMS\Extbase\Mvc\View\AbstractView`` class will be deprecated in V11 and will be removed in TYPO3 v12. Extending the class should be avoided. Consuming classes should directly implement ``TYPO3\CMS\Extbase\Mvc\View\ViewInterface`` instead.
+    
 Now we have the full expression power of PHP available and we can
 implement our own output logic. For example our JSON view could look like
 this::
@@ -74,6 +63,13 @@ Here we can see that the data that is passed to the
 view is available in the array ``$this->viewData``. These are
 converted to JSON data using the function ``json_encode`` and then
 returned.
+
+Now we you have to specify the default view object to use for our controller and action. This is done in the action initialization method ``initialize{ActionName}Action()`` like this::
+    
+   public function initializeListAction()
+   {
+      $this->defaultViewObjectName = \MyVendor\BlogExample\View\Post\ListJSON::class;
+   }
 
 .. tip::
 
@@ -98,7 +94,7 @@ view.
 If you want to control the resolving and initializing of the view
 completely, you have to rewrite the method ``resolveView()``.
 This method has to return a view that implements
-``\TYPO3\CMS\Extbase\Mvc\ViewViewInterface``. Sometimes it is enough to just
+``\TYPO3\CMS\Extbase\Mvc\ViewInterface``. Sometimes it is enough to just
 overwrite the resolution of the view object name. Therefore you must
 overwrite the method ``resolveViewObjectName()``. This method
 returns the name of the PHP class which should be used as view.
